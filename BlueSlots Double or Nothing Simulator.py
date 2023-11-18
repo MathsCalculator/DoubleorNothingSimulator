@@ -1,3 +1,5 @@
+# Copyright (c) [2023], [mathscalculator]
+
 import random, os, time, math, winsound, subprocess
 totalAttempts = 0
 simulationsAmount = 1
@@ -18,6 +20,10 @@ calcFeedbacks = []
 logfile = None
 
 class UserAskedHelp(Exception):
+    def __init__(self, message = ""):
+        super().__init__(message)
+
+class UserResetInputs(Exception):
     def __init__(self, message = ""):
         super().__init__(message)
 
@@ -105,67 +111,100 @@ def StartSimulatingsimulationsAmount():
 
 def GetUserInput():
     global simulationsAmount, multiplier, percentage, price, calculationsAmount, jackpot, totalSimulationsAmount, decimalPlaces, targetPercentage
+    correctInputs = 0
     while True:
         try:
             # Multiplier
-            multiplier = input("When to cash in: 1-9 (9 = jackpot): ")
-            if multiplier.lower() == "help":
-                os.system('cls')
-                print("This simulates a 'player' continuously playing the machine.\nSet player can cash in at any time.\nBy choosing 1, the 'player' will always cash in at 2X.\nBy choosing 9, the 'player' will go for jackpot (9X).")
-                input("\nPress enter to try again ")
-                raise UserAskedHelp()
-            multiplier = int(multiplier)
-            if multiplier > 9 or multiplier < 1:
-                raise ValueError(f"Value {multiplier} of type {type(multiplier)} is not in range(1-9)")
+            if correctInputs < 1:
+                multiplier = input("When to cash in: 1-9 (9 = jackpot): ")
+                if multiplier.lower() == "reset":
+                    raise UserResetInputs()
+                if multiplier.lower() == "help":
+                    os.system('cls')
+                    print("This simulates a 'player' continuously playing the machine.\nSet player can cash in at any time.\nBy choosing 1, the 'player' will always cash in at 2X.\nBy choosing 9, the 'player' will go for jackpot (9X).")
+                    input("\nPress enter to try again")
+                    raise UserAskedHelp()
+                multiplier = int(multiplier)
+                if multiplier > 9 or multiplier < 1:
+                    raise ValueError(f"Value {multiplier} of type {type(multiplier)} is not in range(1-9)")
+                correctInputs = 1
+            else:
+                print(f"When to cash in: 1-9 (9 = jackpot): {multiplier}")
             # Jackpot
-            jackpot = input("Jackpot amount: ")
-            if jackpot.lower() == "help":
-                os.system('cls')
-                print("The jackpot is the amount of money the 'player' will receive upon reaching 9X.")
-                input("\nPress enter to try again")
-                raise UserAskedHelp()
-            jackpot = int(jackpot)
-            if jackpot < 0:
-                raise ValueError(f"Value {jackpot} of type {type(jackpot)} can not be negative")
+            if correctInputs < 2:
+                jackpot = input("Jackpot amount: ")
+                if jackpot.lower() == "reset":
+                    raise UserResetInputs()
+                if jackpot.lower() == "help":
+                    os.system('cls')
+                    print("The jackpot is the amount of money the 'player' will receive upon reaching 9X.")
+                    input("\nPress enter to try again")
+                    raise UserAskedHelp()
+                jackpot = int(jackpot)
+                if jackpot < 0:
+                    raise ValueError(f"Value {jackpot} of type {type(jackpot)} can not be negative")
+                correctInputs = 2
+            else:
+                print(f"Jackpot amount: {jackpot}")
             # Calculation amount
-            calculationsAmount = input("Amount of calculations: ")
-            if calculationsAmount.lower() == "help":
-                os.system('cls')
-                print(f"The program will have calculations and simulations.\nEvery calculation has an amount of simulations inside them.\nSay you chose 5 calculations and 2 simulations:\nThe program will then do 10 total simulations of a player reaching {multiplier}X.\n")
-                print(f"These will be separated like this:\n")
-                for i in range(0, 5):
-                    print(f"Calculating #{i+1} <--- (CALCULATION {i+1})\n...$ with ... total attempts <--- (2 SIMULATIONS)")
-                print("Using 10+ calculations is recommended for better results.")
-                input("\nPress enter to try again ")
-                raise UserAskedHelp()
-            calculationsAmount = int(calculationsAmount)
-            if calculationsAmount <= 0:
-                raise ValueError(f"Value {calculationsAmount} of type {type(calculationsAmount)} can not be negative")
+            if correctInputs < 3:
+                calculationsAmount = input("Amount of calculations: ")
+                if calculationsAmount.lower() == "reset":
+                    raise UserResetInputs()
+                if calculationsAmount.lower() == "help":
+                    os.system('cls')
+                    print(f"The program will have calculations and simulations.\nEvery calculation has an amount of simulations inside them.\nSay you chose 5 calculations and 2 simulations:\nThe program will then do 10 total simulations of a player reaching {multiplier}X.\n")
+                    print(f"These will be separated like this:\n")
+                    for i in range(0, 5):
+                        print(f"Calculating #{i+1} <--- (CALCULATION {i+1})\n...$ with ... total attempts <--- (2 SIMULATIONS)")
+                    print("Using 10+ calculations is recommended for better results.")
+                    input("\nPress enter to try again")
+                    raise UserAskedHelp()
+                calculationsAmount = int(calculationsAmount)
+                if calculationsAmount <= 0:
+                    raise ValueError(f"Value {calculationsAmount} of type {type(calculationsAmount)} can not be negative")
+                correctInputs = 3
+            else:
+                print(f"Amount of calculations= {calculationsAmount}")
             # simulationsAmount
-            simulationsAmount = input("Amount of calculations: ")
-            if simulationsAmount.lower() == "help":
-                os.system('cls')
-                print(f"The program will have calculations and simulations.\nEvery calculation has an amount of simulations inside them.\nSay you chose 5 calculations and 2 simulations:\nThe program will then do 10 total simulations of a player reaching {multiplier}X.\n")
-                print(f"These will be separated like this:\n")
-                for i in range(0, 5):
-                    print(f"Calculating #{i+1} <--- (CALCULATION {i+1})\n...$ with ... total attempts <--- (2 SIMULATIONS)")
-                print("Using 10+ calculations is recommended for better results.")
-                input("\nPress enter to try again ")
-            simulationsAmount = int(simulationsAmount)
-            if simulationsAmount <= 0:
-                raise ValueError(f"Value {simulationsAmount} of type {type(simulationsAmount)} can not be negative")
+            if correctInputs < 4:
+                simulationsAmount = input("Amount of simulations: ")
+                if simulationsAmount.lower() == "reset":
+                    raise UserResetInputs()
+                if simulationsAmount.lower() == "help":
+                    os.system('cls')
+                    print(f"The program will have calculations and simulations.\nEvery calculation has an amount of simulations inside them.\nSay you chose 5 calculations and 2 simulations:\nThe program will then do 10 total simulations of a player reaching {multiplier}X.\n")
+                    print(f"These will be separated like this:\n")
+                    for i in range(0, 5):
+                        print(f"Calculating #{i+1} <--- (CALCULATION {i+1})\n...$ with ... total attempts <--- (2 SIMULATIONS)")
+                    print("Using 10+ calculations is recommended for better results.")
+                    input("\nPress enter to try again")
+                simulationsAmount = int(simulationsAmount)
+                if simulationsAmount <= 0:
+                    raise ValueError(f"Value {simulationsAmount} of type {type(simulationsAmount)} can not be negative")
+                correctInputs = 4
+            else:
+                print(f"Amount of simulations: {simulationsAmount}")
             # Percentage
-            percentage = input("Win rate percentage (per attempt): ")
-            if percentage.lower() == "help":
-                os.system('cls')
-                print("The chance of going from 2X to 3X or from 3X to 4X etc.\nPercentage can be a float or int")
-                input("\nPress enter to try again")
-                raise UserAskedHelp()
-            percentage = float(percentage)
-            if percentage <= 0 or percentage > 100:
-                raise ValueError(f"Value {percentage} of type {type(percentage)} is not in range(0-100)")
+            if correctInputs < 5:
+                percentage = input("Win rate percentage (per attempt): ")
+                if percentage.lower() == "reset":
+                    raise UserResetInputs()
+                if percentage.lower() == "help":
+                    os.system('cls')
+                    print("The chance of going from 2X to 3X or from 3X to 4X etc.\nPercentage can be a float or int")
+                    input("\nPress enter to try again")
+                    raise UserAskedHelp()
+                percentage = float(percentage)
+                if percentage <= 0 or percentage > 100:
+                    raise ValueError(f"Value {percentage} of type {type(percentage)} is not in range(0-100)")
+                correctInputs = 5
+            else:
+                print(f"Win rate percentage (per attempt): {percentage}")
             # Price
             price = input("Price per use: ")
+            if price.lower() == "reset":
+                raise UserResetInputs()
             if price.lower() == "help":
                 os.system('cls')
                 print("The price the user has to pay every time he starts another game.\nUser pays every time he starts from 1X.")
@@ -190,6 +229,9 @@ def GetUserInput():
             input(f"Error: {e}")
             os.system('cls')
         except UserAskedHelp:
+            os.system('cls')
+        except UserResetInputs:
+            correctInputs = 0
             os.system('cls')
     if '.' in str(percentage):
         decimalPosition = str(percentage).index('.')
@@ -332,14 +374,13 @@ def StartProgram():
         if AskYesNo("Open logs folder? (y/n): "):
             subprocess.Popen(['explorer', 'Logs'], shell=True)
     input("Press enter to retry")
-    
     os.system('cls')
     StartProgram()
 
 def PrintInfo():
     os.system('cls')
-    print("Welcome to the BlueSlots Double or Nothing simulator\nThis program simulates a player continuously using the Double or Nothing slot machine\nJust choose your settings and conditions and the program will start the simulations\nIf you need an explanation with a condition, type 'help'\nYou can log your results when the program is finished if necessary\nFor feedback or bug reports, contact me on discord: mathscalculator")
-    input("\nPress enter to continue...")
+    print("Welcome to the BlueSlots Double or Nothing simulator\nThis program simulates a player continuously using the Double or Nothing slot machine\nJust choose your settings and conditions and the program will start the simulations\nYou can reset your input by typing 'RESET' when asked any parameter\nIf you need an explanation with a condition, type 'HELP'\nYou can log your results when the program is finished if necessary\nFor feedback or bug reports, contact me on discord: mathscalculator\n(Program is case insensitive)")
+    input("\nPress enter to continue")
     os.system('cls')
 
 if __name__ == "__main__":
