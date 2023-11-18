@@ -2,11 +2,11 @@
 
 import random, os, time, math, winsound, subprocess
 totalAttempts = 0
-simulationsAmount = 1
-calculationsAmount = 1
-percentage = 1
-price = 1
-jackpot = 1
+simulationsAmount = 0
+calculationsAmount = 0
+percentage = 0
+price = 0
+jackpot = 0
 finishedCalculations = 0
 grandTotalAttempts = 0
 totalSimulationsAmount = None
