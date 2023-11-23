@@ -2,21 +2,8 @@
 
 import random, os, time, math, winsound, subprocess
 totalAttempts = 0
-simulationsAmount = 0
-calculationsAmount = 0
-percentage = 0
-price = 0
-jackpot = 0
-finishedCalculations = 0
-grandTotalAttempts = 0
 totalSimulationsAmount = None
-initialTime = 0
-days, hours, minutes, seconds = 0.0, 0.0, 0.0, 0
-doLog = None
-attemptsInSec = 0
-maxTime = 0
 linesplit = "------------------------------------------------------------"
-calcFeedbacks = []
 logfile = None
 
 class UserAskedHelp(Exception):
@@ -51,7 +38,7 @@ def GetTotalTimeTaken(seconds):
     else:
         return "0 seconds"
 
-def PrintSimulationsprocessETA(i):
+def PrintSimulationsProcessETA(i):
     global days, hours, minutes, seconds, maxTime
     seconds = i
     if seconds is None:
@@ -81,31 +68,30 @@ def PrintSimulationsprocessETA(i):
     else:
         print(f'{format(grandTotalAttempts, ",d")} calculations done | ETA: {math.ceil(round(seconds, 0))} second(s){" " * 50}', end="\r")
 
-def GetSimulationsprocessETA(override):
-    global attemptsInSec, initialTime
+def GetSimulationsProcessETA(override):
+    global attemptsInSec, initialTime, timestampUnknownETA
     if override is True:
         if totalSimulationsAmount < grandTotalAttempts:
             print(f'{format(grandTotalAttempts, ",d")} calculations done | ETA: Now{" " * 50}', end="\r")
         else:
-            PrintSimulationsprocessETA(seconds)
+            PrintSimulationsProcessETA(seconds)
     if time.time() - initialTime > 1 and time.time() - initialTime < 5:
         if totalSimulationsAmount < grandTotalAttempts:
             print(f'{format(grandTotalAttempts, ",d")} calculations done | ETA: Now{" " * 50}', end="\r")
             initialTime = 0
         else:
             timeForTheRest = (time.time() - initialTime) * ((totalSimulationsAmount - grandTotalAttempts) / attemptsInSec)
-            PrintSimulationsprocessETA(timeForTheRest)
+            PrintSimulationsProcessETA(timeForTheRest)
             attemptsInSec = 0
             initialTime = 0
     elif initialTime == 0:
         initialTime = time.time()
 
-def GetRequiredsimulationsAmount(chancePerSim):
-    totalSims = simulationsAmount * calculationsAmount
-    requiredsimulationsAmount = totalSims * (100 / chancePerSim)
-    return math.ceil(requiredsimulationsAmount)
+def GetRequiredSimulationsAmount(chancePerSim):
+    requiredSimulationsAmount = GetTotalSimulationsAmount() * (100 / chancePerSim)
+    return math.ceil(requiredSimulationsAmount)
 
-def StartSimulatingsimulationsAmount():
+def GetTotalSimulationsAmount():
     totalSims = simulationsAmount * calculationsAmount
     return totalSims
 
@@ -122,7 +108,7 @@ def GetUserInput():
                 if multiplier.lower() == "help":
                     os.system('cls')
                     print("This simulates a 'player' continuously playing the machine.\nSet player can cash in at any time.\nBy choosing 1, the 'player' will always cash in at 2X.\nBy choosing 9, the 'player' will go for jackpot (9X).")
-                    input("\nPress enter to try again")
+                    input("\nPress enter to continue")
                     raise UserAskedHelp()
                 multiplier = int(multiplier)
                 if multiplier > 9 or multiplier < 1:
@@ -138,7 +124,7 @@ def GetUserInput():
                 if jackpot.lower() == "help":
                     os.system('cls')
                     print("The jackpot is the amount of money the 'player' will receive upon reaching 9X.")
-                    input("\nPress enter to try again")
+                    input("\nPress enter to continue")
                     raise UserAskedHelp()
                 jackpot = int(jackpot)
                 if jackpot < 0:
@@ -157,8 +143,9 @@ def GetUserInput():
                     print(f"These will be separated like this:\n")
                     for i in range(0, 5):
                         print(f"Calculating #{i+1} <--- (CALCULATION {i+1})\n...$ with ... total attempts <--- (2 SIMULATIONS)")
-                    print("Using 10+ calculations is recommended for better results.")
-                    input("\nPress enter to try again")
+                    print("Using 10+ calculations is recommended for better results.\n")
+                    print("Warning: Low percentage and/or high amount of simulations/calculations will affect simulation speed\n")
+                    input("Press enter to continue")
                     raise UserAskedHelp()
                 calculationsAmount = int(calculationsAmount)
                 if calculationsAmount <= 0:
@@ -177,8 +164,9 @@ def GetUserInput():
                     print(f"These will be separated like this:\n")
                     for i in range(0, 5):
                         print(f"Calculating #{i+1} <--- (CALCULATION {i+1})\n...$ with ... total attempts <--- (2 SIMULATIONS)")
-                    print("Using 10+ calculations is recommended for better results.")
-                    input("\nPress enter to try again")
+                    print("Using 20+ simulations is recommended for better results.\n")
+                    print("Warning: Low percentage and/or high amount of simulations/calculations will affect simulation speed\n")
+                    input("Press enter to try again")
                 simulationsAmount = int(simulationsAmount)
                 if simulationsAmount <= 0:
                     raise ValueError(f"Value {simulationsAmount} of type {type(simulationsAmount)} can not be negative")
@@ -192,8 +180,9 @@ def GetUserInput():
                     raise UserResetInputs()
                 if percentage.lower() == "help":
                     os.system('cls')
-                    print("The chance of going from 2X to 3X or from 3X to 4X etc.\nPercentage can be a float or int")
-                    input("\nPress enter to try again")
+                    print("The chance of going from 2X to 3X or from 3X to 4X etc.\nPercentage can be a float or int\n")
+                    print("Warning: Low percentage and/or high amount of simulations/calculations will affect simulation speed\n")
+                    input("Press enter to continue")
                     raise UserAskedHelp()
                 percentage = float(percentage)
                 if percentage <= 0 or percentage > 100:
@@ -208,7 +197,7 @@ def GetUserInput():
             if price.lower() == "help":
                 os.system('cls')
                 print("The price the user has to pay every time he starts another game.\nUser pays every time he starts from 1X.")
-                input("\nPress enter to try again")
+                input("\nPress enter to continue")
                 raise UserAskedHelp()
             price = int(price)
             if price < 1:
@@ -218,9 +207,9 @@ def GetUserInput():
                 logs.write(f'Number: {str(multiplier)}\nJackpot amount: {str(jackpot)}\nSims per calculation: {str(simulationsAmount)}\nAmount of calculations: {str(calculationsAmount)}\nWin rate percentage: {str(percentage)}\nPrice per use: {str(price)}\n\n')
                 logs.close()
             chancePerSim = (((percentage / 100) ** multiplier) * 100)
-            totalSimulationsAmount = GetRequiredsimulationsAmount(chancePerSim)
+            totalSimulationsAmount = GetRequiredSimulationsAmount(chancePerSim)
             print("Winning chance per simulation: ", chancePerSim, "%")
-            print("Average amount of calculations: ", format(totalSimulationsAmount, ",d"))
+            print("Average amount of simulations: ", format(totalSimulationsAmount, ",d"))
             break
         except TypeError as e:
             input(f"Error: {e}")
@@ -245,7 +234,7 @@ def StartSimulating(numb):
     global totalAttempts, grandTotal, finishedCalculations, grandTotalAttempts, attemptsInSec, calcFeedbacks
     print(f"Calculating #{numb}", " " * 50)
     if finishedCalculations != 0:
-        GetSimulationsprocessETA(True)
+        GetSimulationsProcessETA(True)
     finishedCalculations += 1
     attempts = 0
     addup = []
@@ -260,7 +249,7 @@ def StartSimulating(numb):
             attempts = attempts + 1
             grandTotalAttempts += 1
             attemptsInSec += 1
-            GetSimulationsprocessETA(False)
+            GetSimulationsProcessETA(False)
             for i in range(0, multiplier):
                 if random.randint(0, 10 ** decimalPlaces) <= targetPercentage:
                     addup.append(1)
@@ -281,12 +270,13 @@ def StartSimulating(numb):
     # Keep output in case of logging
     tempresult = f'{format(totalWon - totalLost, ",d")} with {format(totalAttempts, ",d")} total attempts'
     calcFeedbacks.append(tempresult)
+
     grandTotal = grandTotal + totalWon - totalLost
 
-def AskYesNo(Question):
+def AskYesNo(question):
     while True:
         try:
-            userInput = str(input(Question))
+            userInput = str(input(question))
             if userInput.lower() == "y":
                 return True
             elif userInput.lower() == "n":
@@ -309,7 +299,7 @@ def AskToLog():
         print(f"Created Logs\log_{i}")
 
 def ResetVariables():
-    global finishedCalculations, grandTotalAttempts, initialTime, days, hours, minutes, seconds, attemptsInSec, maxTime, grandTotal, doLog, calcFeedbacks
+    global finishedCalculations, grandTotalAttempts, initialTime, days, hours, minutes, seconds, attemptsInSec, maxTime, grandTotal, doLog, calcFeedbacks, timestampUnknownETA
     finishedCalculations = 0
     grandTotalAttempts = 0
     initialTime = 0
@@ -320,31 +310,33 @@ def ResetVariables():
     grandTotal = 0
     doLog = False
     calcFeedbacks = []
+    timestampUnknownETA = 0
 
 def StartProgram():
     ResetVariables()
     GetUserInput()
-    totalTime = time.time()
+    timeStarted = time.time()
     for i in range(0, calculationsAmount):
         StartSimulating(i + 1)
     timeFinished = time.time()
     print("\n")
+    # Print all results to user
     if grandTotal > 0:
         print("Total profit:", format(grandTotal, ",d"), " " * 50)
-        print(f"Average profit per simulation: {format(round(abs(grandTotal / StartSimulatingsimulationsAmount())), ',.0f')}")
+        print(f"Average profit per simulation: {format(round(abs(grandTotal / GetTotalSimulationsAmount())), ',.0f')}")
         if doLog:
-            tempresult = f'\nTotal profit: {format(grandTotal, ",.2f")}\nAverage profit per simulation: {format(round(abs(grandTotal / StartSimulatingsimulationsAmount())), ",.0f")}\nAverage attempts per simulation: {format(math.ceil(grandTotalAttempts / (simulationsAmount * calculationsAmount)), ",.0f")}\n{linesplit}\nTotal calculations done: {format(abs(grandTotalAttempts), ",d")}\n{linesplit}\nTotal time taken: {GetTotalTimeTaken(timeFinished - totalTime)}'
+            tempresult = f'\nTotal profit: {format(grandTotal, ",.2f")}\nAverage profit per simulation: {format(round(abs(grandTotal / GetTotalSimulationsAmount())), ",.0f")}\nAverage attempts per simulation: {format(math.ceil(grandTotalAttempts / (simulationsAmount * calculationsAmount)), ",.0f")}\n{linesplit}\nTotal calculations done: {format(abs(grandTotalAttempts), ",d")}\n{linesplit}\nTotal time taken: {GetTotalTimeTaken(timeFinished - timeStarted)}'
     if grandTotal < 0:
         print("Total loss:", format(abs(grandTotal), ",d"), " " * 50)
-        print(f"Average loss per simulation: {format(round(abs(grandTotal / StartSimulatingsimulationsAmount())), ',.0f')}")
+        print(f"Average loss per simulation: {format(round(abs(grandTotal / GetTotalSimulationsAmount())), ',.0f')}")
         if doLog:
-            tempresult = f'\nTotal loss: {format(abs(grandTotal), ",.2f")}\nAverage loss per simulation: {format(round(abs(grandTotal / StartSimulatingsimulationsAmount())), ",.0f")}\nAverage attempts per simulation: {format(math.ceil(grandTotalAttempts / (simulationsAmount * calculationsAmount)), ",.0f")}\n{linesplit}\nTotal calculations done: {format(abs(grandTotalAttempts), ",d")}\n{linesplit}\nTotal time taken: {GetTotalTimeTaken(timeFinished - totalTime)}'
+            tempresult = f'\nTotal loss: {format(abs(grandTotal), ",.2f")}\nAverage loss per simulation: {format(round(abs(grandTotal / GetTotalSimulationsAmount())), ",.0f")}\nAverage attempts per simulation: {format(math.ceil(grandTotalAttempts / (simulationsAmount * calculationsAmount)), ",.0f")}\n{linesplit}\nTotal calculations done: {format(abs(grandTotalAttempts), ",d")}\n{linesplit}\nTotal time taken: {GetTotalTimeTaken(timeFinished - timeStarted)}'
     print(f"Average attempts per simulation: {format(math.ceil(grandTotalAttempts / (simulationsAmount * calculationsAmount)), ',.0f')}")
     print(linesplit)
     print(f"Total calculations done: {format(abs(grandTotalAttempts), ',d')}")
     print(f"Estimated calculations: {format(abs(totalSimulationsAmount), ',d')}")
     print(linesplit)
-    print(f"Total time taken: {GetTotalTimeTaken(time.time() - totalTime)}")
+    print(f"Total time taken: {GetTotalTimeTaken(timeFinished - timeStarted)}")
     print(f"Estimated time: {GetTotalTimeTaken(maxTime)}")
     print(linesplit)
     if grandTotalAttempts == totalSimulationsAmount:
@@ -352,22 +344,22 @@ def StartProgram():
     elif grandTotalAttempts < totalSimulationsAmount:
         print(f"ETA was {math.floor((grandTotalAttempts / totalSimulationsAmount) * 10000) / 100}% accurate")
     else:
-        print(f"ETA was {math.floor((totalSimulationsAmount / grandTotalAttempts) * 10000) / 100}% accurate")
-    #Ask user to log and log if approved
+        print(f"ETA was {math.floor(maxTime / (timeFinished - timeStarted)) * 10000 / 100}% accurate")
+    # Ask user to log and log if approved
     AskToLog()
     if doLog:
         logs = open(logfile, "a")
-        #Log the user input
+        # Log the user parameters input
         logs.write(f'Number: {str(multiplier)}\nJackpot amount: {str(jackpot)}\nSims per calculation: {str(simulationsAmount)}\nAmount of calculations: {str(calculationsAmount)}\nWin rate percentage: {str(percentage)}\nPrice per use: {str(price)}\n\n')
-        #Log all the feedback lines of the calcs and sims
+        # Log all the feedback lines of the calcs and sims
         for tempresult in calcFeedbacks:
             logs.write(f'{str(tempresult)}\n')
-        #Log the resulting data of the session
+        # Log the resulting data of the completed simulation
         if grandTotal > 0:
-            tempresult = f'\nTotal profit: {format(grandTotal, ",.2f")}\nAverage profit per simulation: {format(round(abs(grandTotal / StartSimulatingsimulationsAmount())), ",.0f")}\nAverage attempts per simulation: {format(math.ceil(grandTotalAttempts / (simulationsAmount * calculationsAmount)), ",.0f")}\n{linesplit}\nTotal calculations done: {format(abs(grandTotalAttempts), ",d")}\n{linesplit}\nTotal time taken: {GetTotalTimeTaken(timeFinished - totalTime)}'
+            tempresult = f'\nTotal profit: {format(grandTotal, ",.2f")}\nAverage profit per simulation: {format(round(abs(grandTotal / GetTotalSimulationsAmount())), ",.0f")}\nAverage attempts per simulation: {format(math.ceil(grandTotalAttempts / (simulationsAmount * calculationsAmount)), ",.0f")}\n{linesplit}\nTotal calculations done: {format(abs(grandTotalAttempts), ",d")}\n{linesplit}\nTotal time taken: {GetTotalTimeTaken(timeFinished - timeStarted)}'
             logs.write(f'{str(tempresult)}\n')
         if grandTotal < 0:
-            tempresult = f'\nTotal loss: {format(abs(grandTotal), ",.2f")}\nAverage loss per simulation: {format(round(abs(grandTotal / StartSimulatingsimulationsAmount())), ",.0f")}\nAverage attempts per simulation: {format(math.ceil(grandTotalAttempts / (simulationsAmount * calculationsAmount)), ",.0f")}\n{linesplit}\nTotal calculations done: {format(abs(grandTotalAttempts), ",d")}\n{linesplit}\nTotal time taken: {GetTotalTimeTaken(timeFinished - totalTime)}'
+            tempresult = f'\nTotal loss: {format(abs(grandTotal), ",.2f")}\nAverage loss per simulation: {format(round(abs(grandTotal / GetTotalSimulationsAmount())), ",.0f")}\nAverage attempts per simulation: {format(math.ceil(grandTotalAttempts / (simulationsAmount * calculationsAmount)), ",.0f")}\n{linesplit}\nTotal calculations done: {format(abs(grandTotalAttempts), ",d")}\n{linesplit}\nTotal time taken: {GetTotalTimeTaken(timeFinished - timeStarted)}'
             logs.write(f'{str(tempresult)}\n')
         logs.close()
         winsound.PlaySound(os.environ['SystemDrive'] + '\Windows\Media\Windows Background.wav', winsound.SND_ALIAS)
