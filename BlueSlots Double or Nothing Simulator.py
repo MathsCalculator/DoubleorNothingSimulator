@@ -295,15 +295,21 @@ def AskYesNo(question):
 # Function to ask the user about logging results
 def AskToLog():
     global logfile
-    if AskYesNo("Would you like to log the results? (y/n): "):
-        if not os.path.exists("Logs"):
-            os.makedirs("Logs")
-        i = len(os.listdir("Logs")) + 1
-        open('Logs\log_' + str(i) + '.txt', "w")
-        logfile = 'Logs\log_' + str(i) + '.txt'
-        print(f"Created Logs\log_{i}")
-        return True
-    return False
+    while True:
+        try:
+            if AskYesNo("Would you like to log the results? (y/n): "):
+                logsPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Logs")
+                if not os.path.exists(logsPath):
+                    os.makedirs(logsPath)
+                i = len(os.listdir("Logs")) + 1
+                open('Logs\log_' + str(i) + '.txt', "w")
+                logfile = f'{logsPath}\log_' + str(i) + '.txt'
+                print(f"Created Logs\log_{i}")
+                return True
+            return False
+        except Exception as e:
+            print(f"Logging disabled due to error: {e}")
+            return False
 
 # Function to reset variables for a new simulation
 def ResetVariables():
@@ -345,8 +351,6 @@ def StartProgram():
     print(f"Total time taken: {totalTimeTaken}")
     print(f"Estimated time: {estimatedTimeTaken}")
     print(linesplit)
-    print(timeFinished - timeStarted)
-    print(maxTime)
     if totalTimeTaken == estimatedTimeTaken:
         print(f"ETA was ~100% accurate")
     elif round(timeFinished - timeStarted) < round(maxTime):
