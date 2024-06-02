@@ -249,15 +249,6 @@ def GetTotalSimulationsAmount():
     totalSims = simulationsAmount * calculationsAmount
     return totalSims
 
-def notifyUser():
-    # Define the function to play the background sound
-    def _play_sound():
-        winsound.PlaySound(os.environ['SystemDrive'] + '\Windows\Media\Windows Background.wav', winsound.SND_FILENAME)
-
-    # Create a thread to play the sound asynchronously
-    sound_thread = threading.Thread(target=_play_sound)
-    sound_thread.start()
-
 # Main function to start the simulation program
 def StartMProgram():
     GetUserInput()
@@ -282,7 +273,6 @@ def StartMProgram():
 
         calcFeedbacks.append(f"Calculation {i + 1}:\n{format(calcTotalWon, ',d')}$ with {format(calcTotalAttempts, ',d')} total attempts{' ' * 50}")
     timeFinished = time.time()
-    notifyUser()
     print(lineSeparator)
     # Print all results to user
     if grandTotal > 0:
