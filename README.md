@@ -3,4 +3,5 @@ A simulation program for the BlueSlots Double or Nothing slotmachines on Garry's
 You will need to have Python version 3.x or higher installed on your system<br />
 Usage is very straightforward, additional info can be given for the paramaters by typing 'help'<br />
 You can edit previous parameters by typing 'reset'<br />
-ETA is unstable with inconsisent CPU's (variating speed)<br />
+ETA does not exist in the multiprocessing branch<br />
+NOTE: This program uses all available CPU cores / threads, your PC might slow down during the simulation
