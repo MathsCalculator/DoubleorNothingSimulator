@@ -1,8 +1,8 @@
 # Importing necessary modules
-import random, os, time, math, subprocess, multiprocessing, sys
+import random, os, time, math, subprocess, multiprocessing, decimal
 
 # Custom exceptions for user interaction BOTH BRANCHES
-class UserAskedHelp(Exception):
+class UserRetriesInput(Exception):
     def __init__(self, message = ""):
         super().__init__(message)
 
@@ -96,6 +96,7 @@ def GetSimulationsProcessETA(override):
 def GetUserInput():
     global simulationsAmount, multiplier, percentage, price, calculationsAmount, jackpot, totalSimulationsAmount, decimalPlaces, targetPercentage
     correctInputs = 0
+    chancePerSim = None
     while True:
         try:
             # Multiplier
@@ -107,7 +108,7 @@ def GetUserInput():
                     os.system('cls')
                     print("This simulates a 'player' continuously playing the machine.\nSet player can cash in at any time.\nBy choosing 1, the 'player' will always cash in at 2X.\nBy choosing 9, the 'player' will go for jackpot (9X).")
                     input("\nPress enter to continue")
-                    raise UserAskedHelp()
+                    raise UserRetriesInput()
                 multiplier = int(multiplier)
                 if multiplier > 9 or multiplier < 1:
                     raise ValueError(f"Value '{multiplier}' of type '{type(multiplier)}' is not in range(1-9)")
@@ -124,7 +125,7 @@ def GetUserInput():
                         os.system('cls')
                         print("The jackpot is the amount of money the 'player' will receive upon reaching 9X.")
                         input("\nPress enter to continue")
-                        raise UserAskedHelp()
+                        raise UserRetriesInput()
                     jackpot = int(jackpot)
                     if jackpot < 0:
                         raise ValueError(f"Value '{jackpot}' of type '{type(jackpot)}' can not be negative")
@@ -147,7 +148,7 @@ def GetUserInput():
                     print("Using 20+ calculations is recommended for better results.\n")
                     print("Warning: Low percentage and/or high amount of simulations/calculations will affect simulation speed\n")
                     input("Press enter to continue")
-                    raise UserAskedHelp()
+                    raise UserRetriesInput()
                 calculationsAmount = int(calculationsAmount)
                 if calculationsAmount <= 0:
                     raise ValueError(f"Value '{calculationsAmount}' of type '{type(calculationsAmount)}' can not be negative")
@@ -156,7 +157,7 @@ def GetUserInput():
                     os.system('cls')
                     print(f"Note: It is recommended to use more calculations than you have threads for optimal time and result ratio\nYou have {os.cpu_count()} threads\n\n")
                     input("Press enter to continue")
-                    raise UserAskedHelp()
+                    raise UserRetriesInput()
             else:
                 print(f"Amount of calculations: {calculationsAmount}")
             # simulationsAmount
@@ -189,11 +190,17 @@ def GetUserInput():
                     print("The chance of going from 2X to 3X or from 3X to 4X etc.\nPercentage can be a float or int\n")
                     print("Warning: Low percentage and/or high amount of simulations/calculations will affect simulation speed\n")
                     input("Press enter to continue")
-                    raise UserAskedHelp()
+                    raise UserRetriesInput()
                 percentage = float(percentage)
                 if percentage <= 0 or percentage > 100:
                     raise ValueError(f"Value '{percentage}' of type '{type(percentage)}' is not in range(0-100)")
-                correctInputs = 5
+                chancePerSim = (((percentage / 100) ** multiplier) * 100)
+                os.system('cls')
+                if AskOrCheckYesNo(f"The chance of reaching X{multiplier} is {chancePerSim}%\nContinue with this percentage? (y/n): "):
+                    correctInputs = 5
+                    raise UserRetriesInput()
+                else:
+                    raise UserRetriesInput()
             else:
                 print(f"Win rate percentage (per attempt): {percentage}")
             # Price
@@ -204,7 +211,7 @@ def GetUserInput():
                 os.system('cls')
                 print("The price the user would have to pay every time he starts another game.\nUser pays every time he starts from 1X (multiple times per simulation).")
                 input("\nPress enter to continue")
-                raise UserAskedHelp()
+                raise UserRetriesInput()
             price = int(price)
             if price < 1:
                 raise ValueError(f"Value '{price}' of type '{type(price)}' is not larger than 0")
@@ -215,14 +222,13 @@ def GetUserInput():
         except ValueError as e:
             input(f"Error: {e}")
             os.system('cls')
-        except UserAskedHelp:
+        except UserRetriesInput:
             os.system('cls')
         except UserResetInputs:
             correctInputs = 0
             os.system('cls')
 
-    # Declare some global variables for other functions
-    chancePerSim = (((percentage / 100) ** multiplier) * 100)
+    # Declare some variables for other functions, pretty straight forward
     totalSimulationsAmount = GetRequiredSimulationsAmount(chancePerSim)
     print("Winning chance per simulation: ", chancePerSim, "%")
     print("Average amount of simulations: ", format(totalSimulationsAmount, ",d"))
@@ -275,12 +281,16 @@ def AskOrCheckYesNo(value, passingOnInput = False):
             raise ValueError(f"Value '{userInput}' is not 'y' or 'n'")
         except ValueError as e:
             print(f"Error: {e}")
-    if value.lower() == "y":
-        return True
-    elif value.lower() == "n":
-        return False
-    else:
-        return None
+    while True and passingOnInput:
+        try:
+            if value.lower() == "y":
+                return True
+            elif value.lower() == "n":
+                return False
+            else:
+                raise ValueError(f"Value '{value}' is not 'y' or 'n'")
+        except ValueError as e:
+                print(f"Error: {e}")
 
 # Function to ask the user about logging results BOTH BRANCHES
 def AskToLog():
@@ -362,7 +372,7 @@ def MSimulate(args):
     calcTotalWon = totalWon - totalLost
 
     print(f"Calculation {currentCalc}:{' ' * 50}")
-    print(f"{format(calcTotalWon, ',d')}$ with {format(attempts, ',d')} total attempts")
+    print(f"{format(calcTotalWon, ',d')}$ with {format(attempts, ',d')} total attempts{' ' * 50}")
     queue.put(currentCalc)
     return [calcTotalWon, attempts]
 
@@ -496,7 +506,7 @@ def StartProgram():
         logs.write(f'When to cash in: 1-9 (9 = jackpot): {str(multiplier)}\nJackpot amount: {str(jackpot)}\nSims per calculation: {str(simulationsAmount)}\nAmount of calculations: {str(calculationsAmount)}\nWin rate percentage: {str(percentage)}\nPrice per use: {str(price)}\n\n')
         # Log all the feedback lines of the calcs and sims
         for tempresult in calcFeedbacks:
-            logs.write(f'{str(tempresult)}\n')
+            logs.write(f'{str(tempresult.strip())}\n')
         # Log the resulting data of the completed simulation
         if grandTotal > 0:
             tempresult = f'\nTotal profit: {format(grandTotal, ",.2f")}$\nAverage profit per simulation: {format(round(abs(grandTotal / GetTotalSimulationsAmount())), ",.0f")}$\nAverage attempts per simulation: {format(math.ceil(grandTotalAttempts / (simulationsAmount * calculationsAmount)), ",.0f")}\n{lineSeparator}\nTotal calculations done: {format(abs(grandTotalAttempts), ",d")}\n{lineSeparator}\nTotal time taken: {tempTimeTakenVar}'
@@ -532,26 +542,19 @@ def PrintInfo():
 def GetBranchToUse(addNote = False):
     global doMultithread
     if addNote:
-        print("This program has 2 branches:\n* Multi-Threading: Uses all CPU threads ---> FASTER | Somewhat accurate ETA | Use multiple calculations (type help for more info)\n* Single-Threaded: Uses 1 core/thread ---> SLOWER | Very accurate ETA\n")
-    uInput = input("Enable Multi-Threading? (y/n): ")
-    if uInput.lower() == "help":
-        os.system("cls")
-        print("Multi-Threading essentially means the division of workload onto multiple CPU threads\nThis program lets each calculation run on a separate CPU thread\nso using only 5 calculations with a 12 threads CPU is not optimal\n")
-        input("Press enter to continue")
-        os.system("cls")
-        GetBranchToUse(addNote)
-        return
-        
-    if AskOrCheckYesNo(uInput, True):
+        print("This program has 2 branches:\n* Multi-Threading: Uses all CPU threads ---> FASTER | Somewhat accurate ETA | Use multiple calculations\n* Single-Threaded: Uses 1 core/thread ---> SLOWER | Very accurate ETA\n")
+    userChoice = AskOrCheckYesNo("Enable Multi-Threading? (y/n): ", False)
+
+    if userChoice:
         os.system("cls")
         print("Multi-Threading enabled...")
-        time.sleep(1)
+        time.sleep(0.5)
         os.system("cls")
         doMultithread = True
     else:
         os.system("cls")
         print("Multi-Threading disabled...")
-        time.sleep(1)
+        time.sleep(0.5)
         os.system("cls")
         doMultithread = False
 
