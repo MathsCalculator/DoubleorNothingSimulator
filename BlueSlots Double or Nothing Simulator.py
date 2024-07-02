@@ -174,6 +174,7 @@ def GetUserInput():
                     print("Using 20+ simulations is recommended for better results.\n")
                     print("Warning: Low percentage and/or high amount of simulations/calculations will affect simulation speed\n")
                     input("Press enter to try again")
+                    raise UserRetriesInput()
                 simulationsAmount = int(simulationsAmount)
                 if simulationsAmount <= 0:
                     raise ValueError(f"Value '{simulationsAmount}' of type '{type(simulationsAmount)}' can not be negative")
