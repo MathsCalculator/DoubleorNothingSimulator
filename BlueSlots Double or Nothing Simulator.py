@@ -1,6 +1,5 @@
 # Importing necessary modules
-import random, os, time, math, subprocess, multiprocessing, decimal
-
+import random, os, time, math, subprocess, multiprocessing
 # Custom exceptions for user interaction BOTH BRANCHES
 class UserRetriesInput(Exception):
     def __init__(self, message = ""):
