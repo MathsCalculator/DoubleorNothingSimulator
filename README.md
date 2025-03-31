@@ -5,5 +5,4 @@ Usage is very straightforward, additional info can be given for the paramaters b
 You can edit previous parameters by typing 'reset'<br />
 ETA exists for both processing modes, but is far more accurate in Single-Threaded mode<br />
 
-NOTE: Multi-Threading uses all available CPU cores / threads, your PC might slow down due to that fact,<br />
-      so choose for Single-Threading if you wish to use your system along with the program actively simulating
+NOTE: With Multi-Threading mode, be sure not to use all your CPU cores or your computer will be unusable while simulating.
