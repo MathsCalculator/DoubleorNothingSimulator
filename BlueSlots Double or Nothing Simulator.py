@@ -542,7 +542,7 @@ def PrintInfo():
 def GetBranchToUse(addNote = False):
     global doMultithread
     if addNote:
-        print("This program has 2 branches:\n* Multi-Threading: Uses all CPU threads ---> FASTER | Somewhat accurate ETA | Use multiple calculations\n* Single-Threaded: Uses 1 core/thread ---> SLOWER | Very accurate ETA\n")
+        print("This program has 2 branches:\n* Multi-Threading: Uses multiple CPU cores/threads ---> FASTER | Somewhat accurate ETA | Use multiple calculations\n* Single-Threaded: Uses 1 core/thread ---> SLOWER | Very accurate ETA\n")
     userChoice = AskOrCheckYesNo("Enable Multi-Threading? (y/n): ", False)
 
     if userChoice:
